@@ -11,7 +11,8 @@ BLEService newService("180A"); // creating the service
 BLEUnsignedCharCharacteristic randomReading("2A58", BLERead | BLENotify); // creating the Analog Value characteristic
 BLEByteCharacteristic switchChar("2A57", BLERead | BLEWrite); // creating the LED characteristic
 
-const int ledPin = 2;
+const int redLEDPin = 2;
+const int greenLEDPin = 3;
 long previousMillis = 0;
 
 void setup()
@@ -20,7 +21,8 @@ void setup()
   while (!Serial);       //starts the program if we open the serial monitor.
 
   pinMode(LED_BUILTIN, OUTPUT); // initialize the built-in LED pin to indicate when a central is connected
-  pinMode(ledPin, OUTPUT); // initialize the built-in LED pin to indicate when a central is connected
+  pinMode(redLEDPin, OUTPUT);
+  pinMode(greenLEDPin, OUTPUT); // initialize the built-in LED pin to indicate when a central is connected
 
   //initialize ArduinoBLE library
   if (!BLE.begin()) {
@@ -28,7 +30,7 @@ void setup()
     while (1);
   }
 
-  BLE.setLocalName("MKR WiFi 1010"); //Setting a name that will appear when scanning for Bluetooth® devices
+  BLE.setLocalName("MKR WiFi 1010-Lukas"); //Setting a name that will appear when scanning for Bluetooth® devices
   BLE.setAdvertisedService(newService);
 
   newService.addCharacteristic(switchChar); //add characteristics to a service
@@ -47,6 +49,9 @@ void setup()
 void loop()
 {
   BLEDevice central = BLE.central(); // wait for a Bluetooth® Low Energy central
+  bool redLED = false;
+  bool greenLED = false;
+
 
   if (central) {  // if a central is connected to the peripheral
     Serial.print("Connected to central: ");
@@ -67,15 +72,59 @@ void loop()
         randomReading.writeValue(randomValue);
 
         if (switchChar.written()) {
-          if (switchChar.value()) {   // any value other than 0
-            Serial.println("LED on");
-            digitalWrite(ledPin, HIGH);         // will turn the LED on
-          } else {                              // a 0 value
-            Serial.println(F("LED off"));
-            digitalWrite(ledPin, LOW);          // will turn the LED off
+          Serial.println(switchChar.value());
+          if (switchChar.value() == 0) // if (value == 0): Switch green LED
+          {
+            if (redLED)
+            {
+              redLED = !redLED;
+              digitalWrite(redLEDPin, LOW);  
+            }
+            else
+            {
+              redLED = !redLED;
+              digitalWrite(redLEDPin, HIGH);  
+            }
+            
+          }
+          else if (switchChar.value() == 1) // if (value == 1): Switch red LED
+          {
+            if (greenLED)
+            {
+              greenLED = !greenLED;
+              digitalWrite(greenLEDPin, LOW);  
+            }
+            else
+            {
+              greenLED = !greenLED;
+              digitalWrite(greenLEDPin, HIGH);  
+            }
+          }
+          else if (switchChar.value() == 34) // if (value == 0): Switch both LED
+          {
+            if (greenLED)
+            {
+              greenLED = !greenLED;
+              digitalWrite(greenLEDPin, LOW);  
+            }
+            else
+            {
+              greenLED = !greenLED;
+              digitalWrite(greenLEDPin, HIGH);  
+            }
+
+            if (redLED)
+            {
+              redLED = !redLED;
+              digitalWrite(redLEDPin, LOW);  
+            }
+            else
+            {
+              redLED = !redLED;
+              digitalWrite(redLEDPin, HIGH);  
+            }
           }
         }
-
       }
     }
 

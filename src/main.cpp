@@ -21,3 +21,7 @@ void loop()
   Serial.println("LED OFF");
   delay(1000);                    // wait for a second
 }
+
+void init(){
+  
+}
